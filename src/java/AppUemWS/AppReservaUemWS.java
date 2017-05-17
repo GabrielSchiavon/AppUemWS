@@ -14,6 +14,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
@@ -43,23 +44,23 @@ public class AppReservaUemWS {
     public AppReservaUemWS() {
     }
     
-    private int verificarPrioridadeLogin(Login login) {
-        login.setPermissao(-1);
+    private int verificarPrioridadeLogin(String email, String senha) {
+        //login.setPermissao(-1);
+        int permissao = -1;
         ArrayList<Login> listaLogin;
         try {
             con = new ControladorDePersistencia();
             listaLogin = con.carregaLoginAtivo();
             for (Login l1 : listaLogin) {
-                if (l1.getEmail().equals(login.getEmail())) {
-                    if (l1.getSenha().equals(login.getSenha())) {
-                        login.clonar(l1);
-                        return login.getPermissao();
+                if (l1.getEmail().equals(email)) {
+                    if (l1.getSenha().equals(senha)) {
+                        return l1.getPermissao();
                     }
                 }
             }
         } catch (SQLException ex) {
         }
-        return login.getPermissao();
+        return permissao;
     }
     
     private boolean emailUsado(Usuario usuario) {
@@ -332,7 +333,6 @@ public class AppReservaUemWS {
     }
     
     private void atualizaSala() {
-
         try {
             ControladorDePersistencia controlador = new ControladorDePersistencia();
             ArrayList<Reserva> lstR = controlador.carregaReserva();
@@ -532,6 +532,10 @@ public class AppReservaUemWS {
 
     }
     
+    private boolean pertenceDocente(String listaDisc, String idDisciplina) {
+        return !listaDisc.contains(idDisciplina);
+    }
+    
     /**
      * Retrieves representation of an instance of AppUemWS.AppReservaUemWS
      * @return an instance of java.lang.String
@@ -544,11 +548,24 @@ public class AppReservaUemWS {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/login/confirmarLogin/{login}")
-    public String confirmarLogin(@PathParam("login") String log) {
+    @Path("/solicitarDataAtual")
+    public String solicitarDataAtual() {
         Gson g = new Gson();
-        Login login = g.fromJson(log, Login.class);
-        return g.toJson(verificarPrioridadeLogin(login));
+        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+        Date date = new Date();
+        return g.toJson(dateFormat.format(date));
+    }
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/login/confirmarLogin/{email}/{senha}")
+    public String confirmarLogin(
+            @PathParam("email") String email,
+            @PathParam("senha") String senha) {
+        
+        Gson g = new Gson();
+        return g.toJson(verificarPrioridadeLogin(email, senha));
+        
     }
     
     @GET
@@ -591,7 +608,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Usuario usuario = g.fromJson(encapsular.getCampo2(), Usuario.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if ((permissao == 4) || (permissao > usuario.getPermissao())) {
@@ -623,7 +640,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Usuario usuario = g.fromJson(encapsular.getCampo2(), Usuario.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         login.clonar(buscarLogin(login));
         
@@ -656,7 +673,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Usuario usuario = g.fromJson(encapsular.getCampo2(), Usuario.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if ((permissao == 4) || (permissao > usuario.getPermissao())) {
@@ -681,10 +698,11 @@ public class AppReservaUemWS {
     @Path("/usuario/alterarSenha")
     public String alterarSenha(String encap) {
         Gson g = new Gson();
+        
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         String senha = encapsular.getCampo2();
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if (permissao != -1) {
@@ -741,7 +759,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Sala sala = g.fromJson(encapsular.getCampo2(), Sala.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if (permissao > 1) {
@@ -769,7 +787,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Sala sala = g.fromJson(encapsular.getCampo2(), Sala.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if (permissao > 1) {
@@ -797,7 +815,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Sala sala = g.fromJson(encapsular.getCampo2(), Sala.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if (permissao > 1) {
@@ -829,7 +847,7 @@ public class AppReservaUemWS {
         }
         return g.toJson(listaCurso);
     }
-    
+
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -839,7 +857,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Curso curso = g.fromJson(encapsular.getCampo2(), Curso.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         if (permissao > 1) {
             try {
@@ -866,7 +884,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Curso curso = g.fromJson(encapsular.getCampo2(), Curso.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         if (permissao > 1) {
             try {
@@ -893,7 +911,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Curso curso = g.fromJson(encapsular.getCampo2(), Curso.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         if (permissao > 1) {
             try {
@@ -934,7 +952,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Disciplina disciplina = g.fromJson(encapsular.getCampo2(), Disciplina.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if (permissao > 1) {
@@ -963,7 +981,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Disciplina disciplina = g.fromJson(encapsular.getCampo2(), Disciplina.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         if (permissao > 1) {
             try {
@@ -991,7 +1009,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Disciplina disciplina = g.fromJson(encapsular.getCampo2(), Disciplina.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if (permissao > 1) {
@@ -1027,6 +1045,40 @@ public class AppReservaUemWS {
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("usuario/removeDisciplinaDocente")
+    public String removeDisciplinaDocente(String encap) {
+        Gson g = new Gson();
+        Encapsular encapsular = g.fromJson(encap, Encapsular.class);
+        Login login = g.fromJson(encapsular.getCampo1(), Login.class);
+        Usuario usuario = g.fromJson(encapsular.getCampo2(), Usuario.class);
+        Disciplina disciplina = g.fromJson(encapsular.getCampo3(), Disciplina.class);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
+        
+        int resultado = -1; // -1 = sem permissao
+        if (permissao > 1) {
+            try {
+                if (!pertenceDocente(usuario.getId_disciplinas(), 
+                        Integer.toString(disciplina.getId()))) {
+                    return g.toJson(2); // disciplina não é relacionado ao docente
+                }
+                con = new ControladorDePersistencia();
+                Boolean ok = con.removeDisciplinaUsuario(usuario, 
+                        Integer.toString(disciplina.getId()));
+                if (ok) {
+                    resultado = 1; // sucesso
+                } else {
+                    resultado = 0; // falha
+                }
+            } catch (SQLException ex) {
+                resultado = 0; // falha
+            }
+        }
+        return g.toJson(resultado);
+    }
+    
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("usuario/insereDisciplinaDocente")
     public String insereDisciplinaDocente(String encap) {
         Gson g = new Gson();
@@ -1035,7 +1087,7 @@ public class AppReservaUemWS {
         Usuario usuario = g.fromJson(encapsular.getCampo2(), Usuario.class);
         Disciplina disciplina = g.fromJson(encapsular.getCampo3(), Disciplina.class);
         
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         if (permissao > 1) {
             try {
@@ -1054,8 +1106,7 @@ public class AppReservaUemWS {
             }
         }
         return g.toJson(resultado);
-    }
-    
+    }    
     
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -1066,7 +1117,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Reserva reserva = g.fromJson(encapsular.getCampo2(), Reserva.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if (permissao >= 1) {
@@ -1087,7 +1138,6 @@ public class AppReservaUemWS {
                 resultado = 0; // falha
             }
         }
-
         return g.toJson(resultado);
     }
     
@@ -1100,7 +1150,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Reserva reserva = g.fromJson(encapsular.getCampo2(), Reserva.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if (permissao > 1) {
@@ -1119,7 +1169,7 @@ public class AppReservaUemWS {
         }
         return g.toJson(resultado);
     }
-    
+
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -1129,9 +1179,9 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Reserva reserva = g.fromJson(encapsular.getCampo2(), Reserva.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
-        if (permissao > 1) {
+        if (permissao >= 1) {
             try {
                 con = new ControladorDePersistencia();
                 Boolean ok = con.removeReserva(reserva.getId());
@@ -1156,7 +1206,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         Reserva reserva = g.fromJson(encapsular.getCampo2(), Reserva.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         if (permissao > 1) {
             try {
@@ -1181,8 +1231,9 @@ public class AppReservaUemWS {
         Gson g = new Gson();
         ArrayList<AnoLetivo> lstAnoL = new ArrayList<>();
         try {
+            con = new ControladorDePersistencia();
             lstAnoL = con.carregaAnoLetivoAtivo();
-        } catch (Exception ex) {
+        } catch (SQLException ex) {
             ex.printStackTrace();
         }
         return g.toJson(lstAnoL);
@@ -1197,7 +1248,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         AnoLetivo anoLetivo = g.fromJson(encapsular.getCampo2(), AnoLetivo.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(),login.getSenha());
         int resultado = -1; // -1 = sem permissao
         
         if (permissao > 1) {
@@ -1225,7 +1276,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         AnoLetivo anoLetivo = g.fromJson(encapsular.getCampo2(), AnoLetivo.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         if (permissao > 1) {
             try {
@@ -1252,7 +1303,7 @@ public class AppReservaUemWS {
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         AnoLetivo anoLetivo = g.fromJson(encapsular.getCampo2(), AnoLetivo.class);
-        int permissao = this.verificarPrioridadeLogin(login);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         if (permissao > 1) {
             try {

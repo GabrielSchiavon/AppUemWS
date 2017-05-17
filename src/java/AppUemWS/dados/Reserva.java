@@ -24,9 +24,9 @@ public class Reserva {
         this.tiposala = -1;
     }
 
-    public Reserva(int id, int iddepartamento, int idusuario, int tipoaula, int iddisciplina,
-            int tipo, String dataefetuacao, int proximoid, String datareserva, int periodo, int tiposala, int idsala,
-            String observacao, int status) {
+    public Reserva(int id, int iddepartamento, int idusuario, int tipoaula, 
+            int iddisciplina, int tipo, String dataefetuacao, int proximoid, 
+            String datareserva, int periodo, int tiposala, int idsala, int status) {
         super();
         this.id = id;
         this.iddepartamento = iddepartamento;
@@ -40,7 +40,6 @@ public class Reserva {
         this.periodo = periodo;
         this.tiposala = tiposala;
         this.idsala = idsala;
-        this.observacao = observacao;
         this.status = status;
     }
 
@@ -140,14 +139,6 @@ public class Reserva {
         this.idsala = idsala;
     }
 
-    public String getObservacao() {
-        return observacao;
-    }
-
-    public void setObservacao(String observacao) {
-        this.observacao = observacao;
-    }
-
     public int getStatus() {
         return status;
     }
@@ -169,7 +160,6 @@ public class Reserva {
         periodo = r.getPeriodo();
         tiposala = r.getTiposala();
         idsala = r.getIdsala();
-        observacao = r.getObservacao();
         status = r.getStatus();
     }
 }

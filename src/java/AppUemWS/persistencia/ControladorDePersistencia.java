@@ -722,8 +722,9 @@ public class ControladorDePersistencia {
                     this.connection.prepareStatement(query)) {
                 ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
                 Reserva r1;
-                String Dataefetuacao, Datareserva, Observacao;
-                int Id,Iddepartamento, Idusuario, Tipoaula, Iddisciplina, Tipo, Proximoid, Periodo, Tiposala, Idsala, Status;
+                String Dataefetuacao, Datareserva;
+                int Id,Iddepartamento, Idusuario, Tipoaula, Iddisciplina, Tipo, 
+                        Proximoid, Periodo, Tiposala, Idsala, Status;
                 listaReserva = new ArrayList<>();
                 while(rs.next()){
                     Id = rs.getInt("id");
@@ -738,11 +739,10 @@ public class ControladorDePersistencia {
                     Periodo = rs.getInt("periodo");
                     Tiposala = rs.getInt("tiposala");
                     Idsala = rs.getInt("idsala");
-                    Observacao = rs.getString("observacao");
                     Status = rs.getInt("status");
-                    r1 = new Reserva(Id, Iddepartamento, Idusuario, Tipoaula, Iddisciplina,
-                            Tipo, Dataefetuacao, Proximoid, Datareserva, Periodo, Tiposala, Idsala,
-                            Observacao, Status);
+                    r1 = new Reserva(Id, Iddepartamento, Idusuario, Tipoaula, 
+                            Iddisciplina, Tipo, Dataefetuacao, Proximoid, 
+                            Datareserva, Periodo, Tiposala, Idsala, Status);
                     listaReserva.add(r1);
                 }
             }
@@ -763,8 +763,9 @@ public class ControladorDePersistencia {
                         this.connection.prepareStatement(query)) {
                     statement.setInt(1, id);
                     ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
-                    String Dataefetuacao, Datareserva, Observacao;
-                    int Id, Iddepartamento, Idusuario, Tipoaula, Iddisciplina, Tipo, Proximoid, Periodo, Tiposala, Idsala, Status;
+                    String Dataefetuacao, Datareserva;
+                    int Id, Iddepartamento, Idusuario, Tipoaula, Iddisciplina, 
+                            Tipo, Proximoid, Periodo, Tiposala, Idsala, Status;
                     while(rs.next()){
                         Id = rs.getInt("id");
                         Iddepartamento = rs.getInt("iddepartamento");
@@ -778,11 +779,10 @@ public class ControladorDePersistencia {
                         Periodo = rs.getInt("periodo");
                         Tiposala = rs.getInt("tiposala");
                         Idsala = rs.getInt("idsala");
-                        Observacao = rs.getString("observacao");
                         Status = rs.getInt("status");
                         r1 = new Reserva(Id, Iddepartamento, Idusuario, Tipoaula, 
                                 Iddisciplina, Tipo, Dataefetuacao, Proximoid, 
-                                Datareserva, Periodo, Tiposala, Idsala,Observacao, Status);
+                                Datareserva, Periodo, Tiposala, Idsala, Status);
                         return r1;
                     }   }
             connection.close();
@@ -796,7 +796,7 @@ public class ControladorDePersistencia {
     public boolean cadastraReserva(Reserva reserva) throws Exception{
  
         try{
-            String query = "INSERT INTO reserva (iddepartamento, idusuario, tipoaula, iddisciplina, tipo, dataefetuacao, proximoid, datareserva, periodo, tiposala, idsala, observacao, status)  VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
+            String query = "INSERT INTO reserva (iddepartamento, idusuario, tipoaula, iddisciplina, tipo, dataefetuacao, proximoid, datareserva, periodo, tiposala, idsala, status)  VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
                 
             try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                 statement.setInt(1, reserva.getIddepartamento());
@@ -810,8 +810,7 @@ public class ControladorDePersistencia {
                 statement.setInt(9, reserva.getPeriodo());
                 statement.setInt(10, reserva.getTiposala());
                 statement.setInt(11, reserva.getIdsala());
-                statement.setString(12, reserva.getObservacao());
-                statement.setInt(13, 1);
+                statement.setInt(12, 1);
                 
                 statement.executeUpdate();
             }
@@ -828,7 +827,7 @@ public class ControladorDePersistencia {
     
     public boolean alteraReserva(Reserva reserva){
     	try{
-            String query = "UPDATE reserva SET iddepartamento=?, idusuario=?, tipoaula=?, iddisciplina=?, tipo=?, dataefetuacao=?, proximoid=?, datareserva=?, periodo=?, tiposala=?, idsala=?, observacao=? WHERE id=?";
+            String query = "UPDATE reserva SET iddepartamento=?, idusuario=?, tipoaula=?, iddisciplina=?, tipo=?, dataefetuacao=?, proximoid=?, datareserva=?, periodo=?, tiposala=?, idsala=? WHERE id=?";
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                     statement.setInt(1, reserva.getIddepartamento());
                     statement.setInt(2, reserva.getIdusuario());
@@ -841,8 +840,7 @@ public class ControladorDePersistencia {
                     statement.setInt(9, reserva.getPeriodo());
                     statement.setInt(10, reserva.getTiposala());
                     statement.setInt(11, reserva.getIdsala());
-                    statement.setString(12, reserva.getObservacao());
-                    statement.setInt(13, reserva.getId());
+                    statement.setInt(12, reserva.getId());
                     
                     statement.executeUpdate();
                 }
@@ -928,8 +926,8 @@ public class ControladorDePersistencia {
                     Inicios = rs.getString("inicios");
                     Fims = rs.getString("fims");
                     Id_Departamento = rs.getInt("iddepartamento");
-                    
                     Status = 1;
+                    
                     anol = new AnoLetivo(Id,Id_Departamento,Iniciop,Fimp, Inicios, Fims, Status);
                     listaA.add(anol);
                 }
@@ -1003,5 +1001,36 @@ public class ControladorDePersistencia {
             ex.printStackTrace();
     	}
     	return false;
+    }
+
+    public boolean removeDisciplinaUsuario(Usuario usuario, String idDisciplina) {
+        String listaDisc = usuario.getId_disciplinas();
+        
+        try {
+            String[] idMaterias = listaDisc.split("-");
+            listaDisc = "";
+            for(String s : idMaterias) {
+                if (!s.equals(idDisciplina)) {
+                    if (listaDisc.length() != 0) {
+                        listaDisc += "-";
+                    }
+                    listaDisc += s;
+                }
+            }
+            
+            String query = "UPDATE usuario SET disciplinas=? WHERE id=?";
+            try (PreparedStatement statement = this.connection.prepareStatement(query)) {
+                statement.setString(1, listaDisc);
+                statement.setInt(2, usuario.getId());
+                    
+                statement.executeUpdate();
+            }
+            connection.close();
+            return true;
+        }
+        catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return false;
     }
 }
