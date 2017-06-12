@@ -98,7 +98,7 @@ public class ControladorDePersistencia {
              return listaDepartamento;
          }
      }
-    
+    /*
     public Departamento carregaDepartamentoID(int id_dep){
         Departamento departamento = null;
         try{
@@ -129,11 +129,11 @@ public class ControladorDePersistencia {
              return departamento;
          }
      }
-    
+    */
     public boolean cadastraDepartamento(Departamento departamento) throws Exception{
  
         try{
-            String query = "INSERT INTO departamento (nome, descricao, idcursosprioritarios, idcursosprioritarios2, status)  VALUES (?,?,?,?,?)";
+            String query = "INSERT INTO departamento (nome, descricao, status)  VALUES (?,?,?)";
                 
   
             try (PreparedStatement statement = this.connection.prepareStatement(query)) {

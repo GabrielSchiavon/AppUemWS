@@ -582,6 +582,91 @@ public class AppReservaUemWS {
         return g.toJson(listDepartamento);
     }
 
+    @POST
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/departamento/cadastrarDepartamento")
+    public String cadastrarDepartamento(String encap) {
+        Gson g = new Gson();
+        Encapsular encapsular = g.fromJson(encap, Encapsular.class);
+        Login login = g.fromJson(encapsular.getCampo1(), Login.class);
+        Departamento departamento = g.fromJson(encapsular.getCampo2(), Departamento.class);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
+        int resultado = -1; // -1 = sem permissao
+        
+        if (permissao > 1) {
+            try {
+
+                con = new ControladorDePersistencia();
+                Boolean ok = con.cadastraDepartamento(departamento);
+                if (ok) {
+                    resultado = 1; // sucesso
+                } else {
+                    resultado = 0; // falha
+                }
+            } catch (Exception ex) {
+                resultado = 0; // falha
+            }
+        }
+        return g.toJson(resultado);
+    }
+    
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/departamento/alterarDepartamento")
+    public String alterarDepartamento(String encap) {
+        Gson g = new Gson();
+        Encapsular encapsular = g.fromJson(encap, Encapsular.class);
+        Login login = g.fromJson(encapsular.getCampo1(), Login.class);
+        Departamento departamento = g.fromJson(encapsular.getCampo2(), Departamento.class);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
+        int resultado = -1; // -1 = sem permissao
+        if (permissao > 1) {
+            try {
+
+                con = new ControladorDePersistencia();
+                Boolean ok = con.alteraDepartamento(departamento);
+                if (ok) {
+                    resultado = 1; // sucesso
+                } else {
+                    resultado = 0; // falha
+                }
+            } catch (SQLException ex) {
+                resultado = 0; // falha
+            }
+        }
+        return g.toJson(resultado);
+    }
+    
+    @PUT
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/departamento/removeDepartamento")
+    public String removeDepartamento(String encap) {
+        Gson g = new Gson();
+        Encapsular encapsular = g.fromJson(encap, Encapsular.class);
+        Login login = g.fromJson(encapsular.getCampo1(), Login.class);
+        Departamento departamento = g.fromJson(encapsular.getCampo2(), Departamento.class);
+        int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
+        int resultado = -1; // -1 = sem permissao
+        
+        if (permissao > 1) {
+            try {
+                con = new ControladorDePersistencia();
+                Boolean ok = con.removeDepartamento(departamento.getId());
+                if (ok) {
+                    resultado = 1; // sucesso
+                } else {
+                    resultado = 0; // falha
+                }
+            } catch (SQLException ex) {
+                resultado = 0; // falha
+            }
+        }
+        return g.toJson(resultado);
+    }
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/usuario/carregarUsuario")
