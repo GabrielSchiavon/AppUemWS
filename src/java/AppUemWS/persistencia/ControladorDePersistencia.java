@@ -53,7 +53,6 @@ public class ControladorDePersistencia {
                 listaLogin = new ArrayList<>();
                 while(rs.next()){
                     Id = rs.getInt("id");
-                    
                     Email = rs.getString("email");
                     Senha = rs.getString("senha");
                     Permissao = rs.getInt("permissao");
@@ -320,7 +319,7 @@ public class ControladorDePersistencia {
              return listaUsuario;
          }
      }
-    
+ 
     public boolean cadastraUsuario(Usuario usuario) throws Exception{
  
         try{
@@ -549,6 +548,40 @@ public class ControladorDePersistencia {
          }
      }
     
+    public Disciplina carregaDisciplinaAtivoPorId(String id){
+        Disciplina disciplina = null;
+        try{
+            String query = "SELECT * FROM disciplina WHERE id="+id;
+            
+            try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
+                    this.connection.prepareStatement(query)) {
+                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                String Nome;
+                int Id, Id_Departamento, Id_Curso, Codigo, Periodo, Turma, Classificacao, Status;
+                while(rs.next()){
+                    Id = rs.getInt("id");
+                    Id_Departamento = rs.getInt("iddepartamento");
+                    Id_Curso = rs.getInt("idcurso");
+                    Codigo = rs.getInt("codigo");
+                    Periodo = rs.getInt("periodo");
+                    Turma = rs.getInt("turma");
+                    Nome = rs.getString("nome");
+                    Classificacao = rs.getInt("classificacao");
+                    Status = 1;
+
+                    disciplina = new Disciplina(Id, Id_Departamento,Id_Curso, Codigo, 
+                            Periodo, Turma, Nome, Classificacao, Status);
+                }
+            }
+            connection.close();
+            return disciplina;
+         }
+         catch(SQLException ex){
+             ex.printStackTrace();
+             return disciplina;
+         }
+     }
+    
     public boolean cadastraDisciplina(Disciplina disciplina) throws Exception{
         try{
             String query = "INSERT INTO disciplina (iddepartamento, idcurso, codigo, periodo, turma, nome, classificacao, status)  VALUES (?,?,?,?,?,?,?,?)";
@@ -713,10 +746,92 @@ public class ControladorDePersistencia {
     	return false;
     }
     
+    public ArrayList<Reserva> carregaReservaPorDia(String dia, int idDepto) {
+        ArrayList<Reserva> listaReserva = null;
+        try{
+            String query = "SELECT * FROM reserva where datareserva=\""+dia+"\" and iddepartamento="+String.valueOf(idDepto);
+            
+            try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
+                    this.connection.prepareStatement(query)) {
+                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                Reserva r1;
+                String Dataefetuacao, Datareserva;
+                int Id,Iddepartamento, Idusuario, Tipoaula, Iddisciplina, Tipo, 
+                        Proximoid, Periodo, Tiposala, Idsala, Status;
+                listaReserva = new ArrayList<>();
+                while(rs.next()){
+                    Id = rs.getInt("id");
+                    Iddepartamento = rs.getInt("iddepartamento");
+                    Idusuario = rs.getInt("idusuario");
+                    Tipoaula = rs.getInt("tipoaula");
+                    Iddisciplina = rs.getInt("iddisciplina");
+                    Tipo = rs.getInt("tipo");
+                    Dataefetuacao = rs.getString("dataefetuacao");
+                    Proximoid = rs.getInt("proximoid");
+                    Datareserva = rs.getString("datareserva");
+                    Periodo = rs.getInt("periodo");
+                    Tiposala = rs.getInt("tiposala");
+                    Idsala = rs.getInt("idsala");
+                    Status = rs.getInt("status");
+                    r1 = new Reserva(Id, Iddepartamento, Idusuario, Tipoaula, 
+                            Iddisciplina, Tipo, Dataefetuacao, Proximoid, 
+                            Datareserva, Periodo, Tiposala, Idsala, Status);
+                    listaReserva.add(r1);
+                }
+            }
+            connection.close();
+         }
+         catch(SQLException ex){
+             ex.printStackTrace();
+         }
+        return listaReserva;
+    }
+    
     public ArrayList<Reserva> carregaReserva(){
         ArrayList<Reserva> listaReserva = null;
         try{
             String query = "SELECT * FROM reserva";
+            
+            try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
+                    this.connection.prepareStatement(query)) {
+                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                Reserva r1;
+                String Dataefetuacao, Datareserva;
+                int Id,Iddepartamento, Idusuario, Tipoaula, Iddisciplina, Tipo, 
+                        Proximoid, Periodo, Tiposala, Idsala, Status;
+                listaReserva = new ArrayList<>();
+                while(rs.next()){
+                    Id = rs.getInt("id");
+                    Iddepartamento = rs.getInt("iddepartamento");
+                    Idusuario = rs.getInt("idusuario");
+                    Tipoaula = rs.getInt("tipoaula");
+                    Iddisciplina = rs.getInt("iddisciplina");
+                    Tipo = rs.getInt("tipo");
+                    Dataefetuacao = rs.getString("dataefetuacao");
+                    Proximoid = rs.getInt("proximoid");
+                    Datareserva = rs.getString("datareserva");
+                    Periodo = rs.getInt("periodo");
+                    Tiposala = rs.getInt("tiposala");
+                    Idsala = rs.getInt("idsala");
+                    Status = rs.getInt("status");
+                    r1 = new Reserva(Id, Iddepartamento, Idusuario, Tipoaula, 
+                            Iddisciplina, Tipo, Dataefetuacao, Proximoid, 
+                            Datareserva, Periodo, Tiposala, Idsala, Status);
+                    listaReserva.add(r1);
+                }
+            }
+            connection.close();
+         }
+         catch(SQLException ex){
+             ex.printStackTrace();
+         }
+        return listaReserva;
+     }
+    
+    public ArrayList<Reserva> carregaReservaPorIdUsuario(int idUsuario){
+        ArrayList<Reserva> listaReserva = null;
+        try{
+            String query = "SELECT * FROM reserva where idusuario="+String.valueOf(idUsuario);
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
@@ -966,7 +1081,7 @@ public class ControladorDePersistencia {
     
     public boolean alteraAnoLetivo(AnoLetivo anoLetivo){
     	try{
-            String query = "UPDATE salaanoletivo SET iddepartamento=?, iniciop=?, fimp=?, inicios=?, fims=? WHERE id=?";
+            String query = "UPDATE anoletivo SET iddepartamento=?, iniciop=?, fimp=?, inicios=?, fims=? WHERE id=?";
                 try (PreparedStatement statement = this.connection.prepareStatement(query)) {
                     statement.setInt(1, anoLetivo.getIddepartamento());
                     statement.setString(2, anoLetivo.getIniciop());

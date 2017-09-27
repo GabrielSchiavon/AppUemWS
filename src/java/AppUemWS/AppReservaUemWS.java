@@ -63,6 +63,27 @@ public class AppReservaUemWS {
         return permissao;
     }
     
+    private Login verificarLogin(String email, String senha) {
+        //login.setPermissao(-1);
+        Login login = new Login(-1, email, senha, -1);
+        ArrayList<Login> listaLogin;
+        try {
+            con = new ControladorDePersistencia();
+            listaLogin = con.carregaLoginAtivo();
+            for (Login l1 : listaLogin) {
+                if (l1.getEmail().equals(login.getEmail())) {
+                    if (l1.getSenha().equals(login.getSenha())) {
+                        l1.setSenha("");
+                        return l1;
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+        }
+        login.setSenha("");
+        return login;
+    }
+    
     private boolean emailUsado(Usuario usuario) {
         try {
             ArrayList<Login> listaLogin;
@@ -551,9 +572,9 @@ public class AppReservaUemWS {
     @Path("/solicitarDataAtual")
     public String solicitarDataAtual() {
         Gson g = new Gson();
-        DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
-        Date date = new Date();
-        return g.toJson(dateFormat.format(date));
+        DateFormat dtIso = new SimpleDateFormat("yyyy-MM-dd");
+        Calendar calendar = Calendar.getInstance();
+        return g.toJson(dtIso.format(calendar.getTime()));
     }
     
     @GET
@@ -564,8 +585,7 @@ public class AppReservaUemWS {
             @PathParam("senha") String senha) {
         
         Gson g = new Gson();
-        return g.toJson(verificarPrioridadeLogin(email, senha));
-        
+        return g.toJson(verificarLogin(email, senha));
     }
     
     @GET
@@ -665,6 +685,31 @@ public class AppReservaUemWS {
             }
         }
         return g.toJson(resultado);
+    }
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/usuario/carregarUsuarioPorId/{id}")
+    public String carregarUsuarioPorId(@PathParam("id") String id) {
+        Gson g = new Gson();
+        int idUsuario = Integer.parseInt(id);
+        Usuario usuario = null;
+        ArrayList<Usuario> listaUsuario = new ArrayList<>();
+        
+        try {
+            con = new ControladorDePersistencia();
+            listaUsuario = con.carregaUsuarioAtivo();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        
+        for(Usuario u: listaUsuario) {
+            if (u.getId() == idUsuario) {
+                usuario = u;
+                break;
+            }
+        }
+        return g.toJson(usuario);
     }
     
     @GET
@@ -1016,6 +1061,26 @@ public class AppReservaUemWS {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("/disciplina/carregarDisciplinasPorId/{idDisciplinas}")
+    public String carregarDisciplina(
+            @PathParam("idDisciplinas") String idDisciplinas) {
+        Gson g = new Gson();
+        String[] idDisc = idDisciplinas.split("-");
+        ArrayList<Disciplina> listaDisciplina = new ArrayList<>();
+        try {
+            for (String idDisc1 : idDisc) {
+                con = new ControladorDePersistencia();
+            
+                listaDisciplina.add(con.carregaDisciplinaAtivoPorId(idDisc1));
+            }
+            
+        } catch (SQLException ex) {
+        }
+        return g.toJson(listaDisciplina);
+    }
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/disciplina/carregarDisciplina")
     public String carregarDisciplina() {
         Gson g = new Gson();
@@ -1111,6 +1176,44 @@ public class AppReservaUemWS {
             }
         }
         return g.toJson(resultado);
+    }
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/reserva/carregarReservaPorUsuario/{strIdUsuario}")
+    public String carregarReservaPorUsuario(
+            @PathParam("strIdUsuario") String strIdUsuario) {
+        
+        Gson g = new Gson();
+        int idUsuario = Integer.parseInt(strIdUsuario);
+        ArrayList<Reserva> listaReserva = new ArrayList<>();
+        try {
+            con = new ControladorDePersistencia();
+            listaReserva = con.carregaReservaPorIdUsuario(idUsuario);
+        } catch (SQLException ex) {
+        }
+        return g.toJson(listaReserva);
+    }
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/reserva/carregarReservaPorDia/{dia}/{idDpto}")
+    public String carregarReservaPorDia (
+            @PathParam("dia") String dia,
+            @PathParam("idDpto") String id) throws ParseException {
+        Gson g = new Gson();
+        DateFormat dtIso = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat dt = new SimpleDateFormat("dd/MM/yyyy");
+        int idDepartamento = Integer.valueOf(id);
+        String dia1 = dt.format(dtIso.parse(dia));
+        ArrayList<Reserva> listaReserva = new ArrayList<>();
+        try {
+            con = new ControladorDePersistencia();
+            listaReserva = con.carregaReservaPorDia(dia1, idDepartamento);
+        }catch(SQLException ex) {
+            ex.printStackTrace();
+        }
+        return g.toJson(listaReserva);
     }
     
     @GET
@@ -1311,6 +1414,37 @@ public class AppReservaUemWS {
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
+    @Path("/anoLetivo/carregarAnoLetivoISO8601")
+    public String carregarAnoLetivoISO8601() throws ParseException {
+        Gson g = new Gson();
+        
+        DateFormat dtIso = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat dt = new SimpleDateFormat("dd/MM/yyyy");
+        
+        ArrayList<AnoLetivo> lstAnoL = new ArrayList<>();
+        try {
+            con = new ControladorDePersistencia();
+            lstAnoL = con.carregaAnoLetivoAtivo();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        
+        for(AnoLetivo anoLetivo : lstAnoL) {
+            try{
+                anoLetivo.setIniciop(dtIso.format(dt.parse(anoLetivo.getIniciop())));
+                anoLetivo.setInicios(dtIso.format(dt.parse(anoLetivo.getInicios())));
+                anoLetivo.setFimp(dtIso.format(dt.parse(anoLetivo.getFimp())));
+                anoLetivo.setFims(dtIso.format(dt.parse(anoLetivo.getFims())));
+            } catch (ParseException ex) {
+                ex.printStackTrace();
+            }
+        }
+        
+        return g.toJson(lstAnoL);
+    }
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
     @Path("/anoLetivo/carregarAnoLetivo")
     public String carregarAnoLetivo() {
         Gson g = new Gson();
@@ -1356,11 +1490,21 @@ public class AppReservaUemWS {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/anoLetivo/alterarAnoLetivo")
-    public String alterarAnoLetivo(String encap) {
+    public String alterarAnoLetivo(String encap) throws ParseException {
         Gson g = new Gson();
+        
+        DateFormat dtIso = new SimpleDateFormat("yyyy-MM-dd");
+        DateFormat dt = new SimpleDateFormat("dd/MM/yyyy");
+        
         Encapsular encapsular = g.fromJson(encap, Encapsular.class);
         Login login = g.fromJson(encapsular.getCampo1(), Login.class);
         AnoLetivo anoLetivo = g.fromJson(encapsular.getCampo2(), AnoLetivo.class);
+        
+        anoLetivo.setIniciop(dt.format(dtIso.parse(anoLetivo.getIniciop())));
+        anoLetivo.setInicios(dt.format(dtIso.parse(anoLetivo.getInicios())));
+        anoLetivo.setFimp(dt.format(dtIso.parse(anoLetivo.getFimp())));
+        anoLetivo.setFims(dt.format(dtIso.parse(anoLetivo.getFims())));
+        
         int permissao = this.verificarPrioridadeLogin(login.getEmail(), login.getSenha());
         int resultado = -1; // -1 = sem permissao
         if (permissao > 1) {
