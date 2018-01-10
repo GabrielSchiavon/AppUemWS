@@ -14,7 +14,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
@@ -53,12 +52,11 @@ public class AppReservaUemWS {
             listaLogin = con.carregaLoginAtivo();
             for (Login l1 : listaLogin) {
                 if (l1.getEmail().equals(email)) {
-                    if (l1.getSenha().equals(senha)) {
-                        return l1.getPermissao();
-                    }
+                    return l1.getPermissao();
                 }
             }
         } catch (SQLException ex) {
+            System.out.println(ex);
         }
         return permissao;
     }
@@ -417,7 +415,7 @@ public class AppReservaUemWS {
         return indiceReserva;
     }
 
-    private void resolveConfrito() {
+    private void resolveConflito() {
         ArrayList<IndiceReserva> lstI;
         ArrayList<Reserva> lstR; // lista de todas as reservas
         ArrayList<Sala> lstS; // lista de todas as salas
@@ -880,6 +878,22 @@ public class AppReservaUemWS {
         return g.toJson(listaSala);
     }
     
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Path("/sala/carregarSalaPorDepartamento/{idDepartamento}")
+    public String carregarSalaPorDepartamento(
+        @PathParam("idDepartamento") String idDepartamento
+    ) {
+        Gson g = new Gson();
+        ArrayList<Sala> listaSala = new ArrayList<>();
+        try {
+            con = new ControladorDePersistencia();
+            listaSala = con.carregaSalaAtivoPorDepartamento(idDepartamento);
+        } catch (SQLException ex) {
+        }
+        return g.toJson(listaSala);
+    }
+    
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -1186,7 +1200,7 @@ public class AppReservaUemWS {
         
         Gson g = new Gson();
         int idUsuario = Integer.parseInt(strIdUsuario);
-        ArrayList<Reserva> listaReserva = new ArrayList<>();
+        ArrayList<ReservaUsuario> listaReserva = new ArrayList<>();
         try {
             con = new ControladorDePersistencia();
             listaReserva = con.carregaReservaPorIdUsuario(idUsuario);

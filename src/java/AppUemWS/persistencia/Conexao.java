@@ -7,7 +7,7 @@ import java.sql.SQLException;
 public class Conexao {
 	private static final String URL = "jdbc:mysql://localhost:3306/appreserva";
 	private static final String USER = "root";
-	private static final String SENHA = "appsmoveis"; 
+	private static final String SENHA = "4874524"; 
 	
 	public static Connection conecta() throws SQLException{
 		Connection con;

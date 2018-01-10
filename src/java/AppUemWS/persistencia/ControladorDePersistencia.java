@@ -45,7 +45,7 @@ public class ControladorDePersistencia {
                     PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                             this.connection.prepareStatement(query)) {
                 //obtendo os resultados (O parenteses antes do valor atribuido serve apenas para nao causar conflito entre os tipos)
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 //declarando variaveis para usar a seguir
                 Login login1;
                 String Email, Senha;
@@ -75,7 +75,7 @@ public class ControladorDePersistencia {
             String query = "SELECT * FROM departamento WHERE status=1";
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 Departamento dep1;
                 String Nome, Descricao;
                 int Id, Status;
@@ -190,13 +190,44 @@ public class ControladorDePersistencia {
     	return false;
     }
     
+    public ArrayList<Sala> carregaSalaAtivoPorDepartamento(String idDepart){
+        ArrayList<Sala> listaSala = null;
+        try{
+            String query = "SELECT * FROM sala WHERE status=1 and iddepartamento="+idDepart;
+            
+            try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)this.connection.prepareStatement(query)) {
+                ResultSet rs = statement.executeQuery(query);
+                Sala sala1;
+                String Descricao;
+                int Id, Id_Departamento, Numero, Classificacao, Status;
+                listaSala = new ArrayList<>();
+                while(rs.next()){
+                    Id = rs.getInt("id");
+                    Numero = rs.getInt("numero");
+                    Id_Departamento = rs.getInt("iddepartamento");
+                    Classificacao = rs.getInt("classificacao");
+                    Descricao = rs.getString("descricao");
+                    Status = 1;
+                    sala1 = new Sala(Id,Numero, Id_Departamento,Classificacao,Descricao, Status);
+                    listaSala.add(sala1);
+                }
+            }
+            connection.close();
+            return listaSala;
+         }
+         catch(SQLException ex){
+             ex.printStackTrace();
+             return listaSala;
+         }
+     }
+    
     public ArrayList<Sala> carregaSalaAtivo(){
         ArrayList<Sala> listaSala = null;
         try{
             String query = "SELECT * FROM sala WHERE status=1";
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 Sala sala1;
                 String Descricao;
                 int Id, Id_Departamento, Numero, Classificacao, Status;
@@ -290,7 +321,7 @@ public class ControladorDePersistencia {
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 Usuario user1;
                 String Nome, Email, Senha, Telefone, Disciplinas;
                 int Id, Id_Departamento, Permissao, ProblemaLocomocao, Status;
@@ -424,7 +455,7 @@ public class ControladorDePersistencia {
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 Curso curso1;
                 String Nome, Descricao;
                 int Id, Id_Departamento, Tipo, Status;
@@ -518,7 +549,7 @@ public class ControladorDePersistencia {
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 Disciplina d1;
                 String Nome;
                 int Id, Id_Departamento, Id_Curso, Codigo, Periodo, Turma, Classificacao, Status;
@@ -555,7 +586,7 @@ public class ControladorDePersistencia {
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 String Nome;
                 int Id, Id_Departamento, Id_Curso, Codigo, Periodo, Turma, Classificacao, Status;
                 while(rs.next()){
@@ -657,7 +688,7 @@ public class ControladorDePersistencia {
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 IndiceReserva ir1;
                 String Data;
                 int Id, Iddepartamento, Periodo, ClassificacaoSala, Idprimeiro, Status;
@@ -753,7 +784,7 @@ public class ControladorDePersistencia {
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 Reserva r1;
                 String Dataefetuacao, Datareserva;
                 int Id,Iddepartamento, Idusuario, Tipoaula, Iddisciplina, Tipo, 
@@ -794,7 +825,7 @@ public class ControladorDePersistencia {
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 Reserva r1;
                 String Dataefetuacao, Datareserva;
                 int Id,Iddepartamento, Idusuario, Tipoaula, Iddisciplina, Tipo, 
@@ -828,19 +859,26 @@ public class ControladorDePersistencia {
         return listaReserva;
      }
     
-    public ArrayList<Reserva> carregaReservaPorIdUsuario(int idUsuario){
-        ArrayList<Reserva> listaReserva = null;
+    public ArrayList<ReservaUsuario> carregaReservaPorIdUsuario(int idUsuario){
+        ArrayList<ReservaUsuario> listaReserva = null;
         try{
-            String query = "SELECT * FROM reserva where idusuario="+String.valueOf(idUsuario);
+            String query = "select reserva.*, sala.numero, sala.descricao, disciplina.nome " +
+                            "from reserva " +
+                            "left join sala on (reserva.idsala = sala.id) " +
+                            "left join disciplina on (reserva.iddisciplina = disciplina.id) " +
+                            "where sala.id is not null and reserva.idusuario = "+String.valueOf(idUsuario);
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
-                Reserva r1;
-                String Dataefetuacao, Datareserva;
+                
+                ResultSet rs = statement.executeQuery(query);
+                
+                ReservaUsuario r1;
+                String Dataefetuacao, Datareserva, Descricao, NomeMateria;
                 int Id,Iddepartamento, Idusuario, Tipoaula, Iddisciplina, Tipo, 
-                        Proximoid, Periodo, Tiposala, Idsala, Status;
+                        Proximoid, Periodo, Tiposala, Idsala, Status, Numero;
                 listaReserva = new ArrayList<>();
+                
                 while(rs.next()){
                     Id = rs.getInt("id");
                     Iddepartamento = rs.getInt("iddepartamento");
@@ -855,9 +893,13 @@ public class ControladorDePersistencia {
                     Tiposala = rs.getInt("tiposala");
                     Idsala = rs.getInt("idsala");
                     Status = rs.getInt("status");
-                    r1 = new Reserva(Id, Iddepartamento, Idusuario, Tipoaula, 
+                    Numero = rs.getInt("numero");
+                    Descricao = rs.getString("descricao");
+                    NomeMateria = rs.getString("nome");
+                    r1 = new ReservaUsuario(Id, Iddepartamento, Idusuario, Tipoaula, 
                             Iddisciplina, Tipo, Dataefetuacao, Proximoid, 
-                            Datareserva, Periodo, Tiposala, Idsala, Status);
+                            Datareserva, Periodo, Tiposala, Idsala, Status, Numero,
+                            Descricao, NomeMateria);
                     listaReserva.add(r1);
                 }
             }
@@ -877,7 +919,7 @@ public class ControladorDePersistencia {
                 try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                         this.connection.prepareStatement(query)) {
                     statement.setInt(1, id);
-                    ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                    ResultSet rs = statement.executeQuery(query);
                     String Dataefetuacao, Datareserva;
                     int Id, Iddepartamento, Idusuario, Tipoaula, Iddisciplina, 
                             Tipo, Proximoid, Periodo, Tiposala, Idsala, Status;
@@ -1029,7 +1071,7 @@ public class ControladorDePersistencia {
             
             try (PreparedStatement statement = (com.mysql.jdbc.PreparedStatement)
                     this.connection.prepareStatement(query)) {
-                ResultSet rs = (com.mysql.jdbc.ResultSet)statement.executeQuery(query);
+                ResultSet rs = statement.executeQuery(query);
                 AnoLetivo anol;
                 String Iniciop, Fimp, Inicios, Fims;
                 int Id, Id_Departamento, Status;
